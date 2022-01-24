@@ -15,6 +15,11 @@ starter_hello_inputs = ["%hello", "%henlo"]
 starter_hello_outputs = ["Hello", "hello", "Henlo", "henlo", ]
 starter_smiles = [":grinning:", ":smiley:", ":slight_smile:", ":smile:", ":grin:"]
 
+def botout(text):
+  #input a string and output in the format we use
+  msgchan.send("`"+ text + "`")
+
+
 def update_db(key, value): #updating "key" db with "value"
   if key in db.keys():
     db1 = db[key]
@@ -32,6 +37,10 @@ async def on_ready():
 
 @client.event
 async def on_message(message):
+  #Global varible for the message.channel
+  global msgchan
+  msgchan = message.channel 
+
   if message.author == client.user:
     return
 
@@ -40,27 +49,26 @@ async def on_message(message):
   if "hello in" in db.keys():
     in_options.extend(db["hello in"])
   
+  #maybe make an admin only %test command, that checks all commands and also cleans up after itself
+
   #basic help guide
   if msg=="%help":
-    await message.channel.send("""`ps-bot guide: \nGreet me ("%help inputs" to see the list of valid inputs) and I will reply ("-" to see a list of my replies)`""")
+    botout("""ps-bot guide: \nGreet me ("%help inputs" to see the list of valid inputs) and I will reply ("-" to see a list of my replies)""")
 
   if msg == "%help inputs":
-    await message.channel.send("`ps-bot inputs:`")
+    botout("Valid Inputs:")
     in_options = list(OrderedDict.fromkeys(in_options))
-    await message.channel.send("`" + str(in_options) + "`")
-    #i = 1
-    #for x in in_options:
-    #  await message.channel.send("`" + str(i) + ". " + x + ",`")
-    #  i += 1
-    await message.channel.send("`use - to add new inputs, and - to delete an input`")
+    #await msgchan.send("`"+ str(in_options) + "`")
+    botout(str(in_options))
+    botout("use %new input X to add new input X, and - to delete an input")
 
   if msg.startswith("%new input"):
     new_input = msg.split("%new input ",1)[1]
     if new_input in db["hello in"]:
-      await message.channel.send("Input is already recognized")
+      botout("Input is already recognized")
     else:  
       update_db("hello in",new_input)
-      await message.channel.send(new_input + " added to list of valid inputs")
+      botout(new_input + " added to list of valid inputs")
 
   if msg in in_options:
     #Replies to the %hello with Author username or nickname if set + a random smile:
@@ -68,9 +76,9 @@ async def on_message(message):
     if author_nick == 'None':
       author = str(message.author)
       author = author.split('%')
-      await message.channel.send( random.choice(starter_hello_outputs) + " " + author[0] + " " + random.choice(starter_smiles)) 
+      botout( random.choice(starter_hello_outputs) + " " + author[0] + " " + random.choice(starter_smiles)) 
     else:
-      await message.channel.send(random.choice(starter_hello_outputs) + " " + author_nick + " " + random.choice(starter_smiles))
+      botout(random.choice(starter_hello_outputs) + " " + author_nick + " " + random.choice(starter_smiles))
     
 client.run(os.environ['token'])
 
